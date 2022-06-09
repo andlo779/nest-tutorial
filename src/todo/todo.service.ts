@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { UpdateOwnerTodoDto } from './dto/update-owner-todo.dto';
 import { Todo } from './entities/todo.entity';
@@ -9,6 +9,20 @@ import { UpdateDueDateTodoDto } from './dto/update-due-date-todo.dto';
 @Injectable()
 export class TodoService {
   private todoStore = new Map<string, Todo>();
+  private _logger;
+
+  constructor() {
+    this._logger = new Logger();
+  }
+
+  private fetchOne(id: string): Todo {
+    const todo = this.todoStore.get(id);
+    if (!todo) {
+      this._logger.warn(`Could not found a 'Todo' with id ${id}`);
+      throw new NotFoundException();
+    }
+    return todo;
+  }
 
   create(createTodoDto: CreateTodoDto): TodoDto {
     const todo: Todo = new Todo(
@@ -27,24 +41,12 @@ export class TodoService {
   }
 
   findOne(id: string): TodoDto {
-    const todo = this.todoStore.get(id);
-    if (!todo) {
-      throw new HttpException(
-        `No Todo with id: ${id} exisit`,
-        HttpStatus.NOT_FOUND,
-      );
-    }
+    const todo = this.fetchOne(id);
     return TodoDto.fromEntity(todo);
   }
 
   updateOwner(id: string, updateOwnerTodoDto: UpdateOwnerTodoDto): TodoDto {
-    const todo = this.todoStore.get(id);
-    if (!todo) {
-      throw new HttpException(
-        `No Todo with id: ${id} exisit`,
-        HttpStatus.NOT_FOUND,
-      );
-    }
+    const todo = this.fetchOne(id);
     todo.owner = updateOwnerTodoDto.owner;
     this.todoStore.set(todo.id, todo);
     return TodoDto.fromEntity(todo);
@@ -54,13 +56,7 @@ export class TodoService {
     id: string,
     updateDescriptionTodoDto: UpdateDescriptionTodoDto,
   ): TodoDto {
-    const todo = this.todoStore.get(id);
-    if (!todo) {
-      throw new HttpException(
-        `No Todo with id: ${id} exisit`,
-        HttpStatus.NOT_FOUND,
-      );
-    }
+    const todo = this.fetchOne(id);
     todo.description = updateDescriptionTodoDto.description;
     this.todoStore.set(todo.id, todo);
     return TodoDto.fromEntity(todo);
@@ -70,13 +66,7 @@ export class TodoService {
     id: string,
     updateDueDateTodoDto: UpdateDueDateTodoDto,
   ): TodoDto {
-    const todo = this.todoStore.get(id);
-    if (!todo) {
-      throw new HttpException(
-        `No Todo with id: ${id} exisit`,
-        HttpStatus.NOT_FOUND,
-      );
-    }
+    const todo = this.fetchOne(id);
     todo.dueAt = updateDueDateTodoDto.dueAt;
     this.todoStore.set(todo.id, todo);
     return TodoDto.fromEntity(todo);
@@ -84,10 +74,10 @@ export class TodoService {
 
   remove(id: string) {
     if (!this.todoStore.delete(id)) {
-      throw new HttpException(
-        `No Todo with id: ${id} exisit`,
-        HttpStatus.NOT_FOUND,
+      this._logger.warn(
+        `Failed to delete an 'Todo' entity with id: ${id} as it was not found.`,
       );
+      throw new NotFoundException();
     }
   }
 
