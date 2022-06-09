@@ -1,8 +1,10 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateTodoDto } from './dto/create-todo.dto';
-import { UpdateTodoDto } from './dto/update-todo.dto';
+import { UpdateOwnerTodoDto } from './dto/update-owner-todo.dto';
 import { Todo } from './entities/todo.entity';
 import { TodoDto } from './dto/todo.dto';
+import { UpdateDescriptionTodoDto } from './dto/update-description-todo.dto';
+import { UpdateDueDateTodoDto } from './dto/update-due-date-todo.dto';
 
 @Injectable()
 export class TodoService {
@@ -35,8 +37,49 @@ export class TodoService {
     return TodoDto.fromEntity(todo);
   }
 
-  update(id: string, updateTodoDto: UpdateTodoDto) {
-    return `This action updates a #${id} todo`;
+  updateOwner(id: string, updateOwnerTodoDto: UpdateOwnerTodoDto): TodoDto {
+    const todo = this.todoStore.get(id);
+    if (!todo) {
+      throw new HttpException(
+        `No Todo with id: ${id} exisit`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    todo.owner = updateOwnerTodoDto.owner;
+    this.todoStore.set(todo.id, todo);
+    return TodoDto.fromEntity(todo);
+  }
+
+  updateDescription(
+    id: string,
+    updateDescriptionTodoDto: UpdateDescriptionTodoDto,
+  ): TodoDto {
+    const todo = this.todoStore.get(id);
+    if (!todo) {
+      throw new HttpException(
+        `No Todo with id: ${id} exisit`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    todo.description = updateDescriptionTodoDto.description;
+    this.todoStore.set(todo.id, todo);
+    return TodoDto.fromEntity(todo);
+  }
+
+  updateDueDate(
+    id: string,
+    updateDueDateTodoDto: UpdateDueDateTodoDto,
+  ): TodoDto {
+    const todo = this.todoStore.get(id);
+    if (!todo) {
+      throw new HttpException(
+        `No Todo with id: ${id} exisit`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    todo.dueAt = updateDueDateTodoDto.dueAt;
+    this.todoStore.set(todo.id, todo);
+    return TodoDto.fromEntity(todo);
   }
 
   remove(id: string) {

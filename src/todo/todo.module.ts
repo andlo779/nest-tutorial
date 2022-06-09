@@ -6,6 +6,6 @@ import { TodoStatisticService } from './todoStatistic.service';
 @Module({
   controllers: [TodoController],
   providers: [TodoService, TodoStatisticService],
-  exports: [TodoService],
+  exports: [TodoStatisticService],
 })
 export class TodoModule {}
