@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   HttpCode,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { TodoService } from './todo.service';
 import { CreateTodoDto } from './dto/create-todo.dto';
@@ -31,13 +32,13 @@ export class TodoController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.todoService.findOne(id);
   }
 
   @Patch(':id/owner')
   updateOwner(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() updateOwnerTodoDto: UpdateOwnerTodoDto,
   ) {
     return this.todoService.updateOwner(id, updateOwnerTodoDto);
@@ -45,7 +46,7 @@ export class TodoController {
 
   @Patch(':id/description')
   updateDescription(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() updateDescriptionTodoDto: UpdateDescriptionTodoDto,
   ) {
     return this.todoService.updateDescription(id, updateDescriptionTodoDto);
@@ -53,14 +54,14 @@ export class TodoController {
 
   @Patch(':id/due-date')
   updateDueDate(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() updateDueDateTodoDto: UpdateDueDateTodoDto,
   ) {
     return this.todoService.updateDueDate(id, updateDueDateTodoDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.todoService.remove(id);
   }
 }
