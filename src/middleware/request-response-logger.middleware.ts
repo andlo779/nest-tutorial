@@ -6,17 +6,23 @@ export class RequestResponseLoggerMiddleware implements NestMiddleware {
   private _logger = new Logger('HTTP');
 
   use(request: Request, response: Response, next: NextFunction): void {
-    const { ip, method, originalUrl } = request;
+    const startAt = process.hrtime();
+    const { ip, method, originalUrl, hostname } = request;
     const userAgent = request.get('user-agent') || '';
+
+    this._logger.log(
+      `Request: {method: ${method}, url: ${originalUrl}, hostname: ${hostname}, remoteAddress: ${ip}, userAgent: ${userAgent}}, Message: Incoming request}`,
+    );
 
     response.on('finish', () => {
       const { statusCode } = response;
+      const diff = process.hrtime(startAt);
+      const responseTime = diff[0] * 1e3 + diff[1] * 1e-6;
 
       this._logger.log(
-        `Route: ${method} ${originalUrl} - Response Status: ${statusCode} - User Agent: ${userAgent} - Client IP: ${ip}`,
+        `Response: {statusCode: ${statusCode}, responseTime: ${responseTime}ms, Message: Request completed`,
       );
     });
-
     next();
   }
 }
