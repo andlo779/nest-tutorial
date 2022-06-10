@@ -1,7 +1,8 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { HealthController } from './health/health.controller';
 import { TodoModule } from './todo/todo.module';
 import { MongooseModule } from '@nestjs/mongoose';
+import { RequestResponseLoggerMiddleware } from './middleware/request-response-logger.middleware';
 
 @Module({
   imports: [
@@ -13,4 +14,8 @@ import { MongooseModule } from '@nestjs/mongoose';
   controllers: [HealthController],
   providers: [],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(RequestResponseLoggerMiddleware).forRoutes('*');
+  }
+}

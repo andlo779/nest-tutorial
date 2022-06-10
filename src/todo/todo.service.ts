@@ -12,13 +12,13 @@ export class TodoService {
   private _logger;
 
   constructor() {
-    this._logger = new Logger();
+    this._logger = new Logger(TodoService.name);
   }
 
   private fetchOne(id: string): Todo {
     const todo = this.todoStore.get(id);
     if (!todo) {
-      this._logger.warn(`Could not found a 'Todo' with id ${id}`);
+      this._logger.log(`Could not found a 'Todo' with id ${id}`);
       throw new NotFoundException();
     }
     return todo;
