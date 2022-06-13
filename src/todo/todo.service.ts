@@ -5,83 +5,77 @@ import { Todo } from './entities/todo.entity';
 import { TodoDto } from './dto/todo.dto';
 import { UpdateDescriptionTodoDto } from './dto/update-description-todo.dto';
 import { UpdateDueDateTodoDto } from './dto/update-due-date-todo.dto';
+import { TodoRepository } from './entities/todo.repository';
 
 @Injectable()
 export class TodoService {
-  private todoStore = new Map<string, Todo>();
   private _logger;
 
-  constructor() {
+  constructor(private readonly todoRepository: TodoRepository) {
     this._logger = new Logger(TodoService.name);
   }
 
-  private fetchOne(id: string): Todo {
-    const todo = this.todoStore.get(id);
+  private async fetchOne(uuid: string): Promise<Todo> {
+    const todo = await this.todoRepository.getOne(uuid);
     if (!todo) {
-      this._logger.log(`Could not found a 'Todo' with id ${id}`);
+      this._logger.log(`Could not found a 'Todo' with id ${uuid}`);
       throw new NotFoundException();
     }
     return todo;
   }
 
-  create(createTodoDto: CreateTodoDto): TodoDto {
+  async create(createTodoDto: CreateTodoDto): Promise<TodoDto> {
     const todo: Todo = new Todo(
       createTodoDto.title,
       createTodoDto.description,
       createTodoDto.owner,
     );
-    this.todoStore.set(todo.id, todo);
+    await this.todoRepository.save(todo);
     return TodoDto.fromEntity(todo);
   }
 
-  findAll(): TodoDto[] {
+  async findAll(): Promise<TodoDto[]> {
     const todos: TodoDto[] = [];
-    this.todoStore.forEach((todo) => todos.push(TodoDto.fromEntity(todo)));
+    const result = await this.todoRepository.getAll();
+    result.forEach((todo) => todos.push(TodoDto.fromEntity(todo)));
     return todos;
   }
 
-  findOne(id: string): TodoDto {
-    const todo = this.fetchOne(id);
+  async findOne(uuid: string): Promise<TodoDto> {
+    const todo = await this.fetchOne(uuid);
     return TodoDto.fromEntity(todo);
   }
 
-  updateOwner(id: string, updateOwnerTodoDto: UpdateOwnerTodoDto): TodoDto {
-    const todo = this.fetchOne(id);
+  async updateOwner(
+    uuid: string,
+    updateOwnerTodoDto: UpdateOwnerTodoDto,
+  ): Promise<TodoDto> {
+    const todo = await this.fetchOne(uuid);
     todo.owner = updateOwnerTodoDto.owner;
-    this.todoStore.set(todo.id, todo);
-    return TodoDto.fromEntity(todo);
+    return TodoDto.fromEntity(await this.todoRepository.update(todo));
   }
 
-  updateDescription(
-    id: string,
+  async updateDescription(
+    uuid: string,
     updateDescriptionTodoDto: UpdateDescriptionTodoDto,
-  ): TodoDto {
-    const todo = this.fetchOne(id);
+  ): Promise<TodoDto> {
+    const todo = await this.fetchOne(uuid);
     todo.description = updateDescriptionTodoDto.description;
-    this.todoStore.set(todo.id, todo);
-    return TodoDto.fromEntity(todo);
+    return TodoDto.fromEntity(await this.todoRepository.update(todo));
   }
 
-  updateDueDate(
-    id: string,
+  async updateDueDate(
+    uuid: string,
     updateDueDateTodoDto: UpdateDueDateTodoDto,
-  ): TodoDto {
-    const todo = this.fetchOne(id);
+  ): Promise<TodoDto> {
+    const todo = await this.fetchOne(uuid);
     todo.dueAt = updateDueDateTodoDto.dueAt;
-    this.todoStore.set(todo.id, todo);
-    return TodoDto.fromEntity(todo);
+    return TodoDto.fromEntity(await this.todoRepository.update(todo));
   }
 
-  remove(id: string) {
-    if (!this.todoStore.delete(id)) {
-      this._logger.warn(
-        `Failed to delete an 'Todo' entity with id: ${id} as it was not found.`,
-      );
+  async remove(uuid: string) {
+    if (!(await this.todoRepository.delete(uuid))) {
       throw new NotFoundException();
     }
-  }
-
-  numberOfTodos(): number {
-    return this.todoStore.size;
   }
 }

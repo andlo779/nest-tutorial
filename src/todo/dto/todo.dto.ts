@@ -10,7 +10,7 @@ export class TodoDto {
 
   static fromEntity(entity: Todo): TodoDto {
     const todo = new TodoDto();
-    todo.id = entity.id;
+    todo.id = entity.uuid;
     todo.title = entity.title;
     todo.description = entity.description;
     todo.owner = entity.owner;

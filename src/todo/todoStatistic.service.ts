@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { TodoService } from './todo.service';
+import { TodoRepository } from './entities/todo.repository';
 
 @Injectable()
 export class TodoStatisticService {
-  constructor(private readonly todoService: TodoService) {}
+  constructor(private readonly todoRepository: TodoRepository) {}
 
-  getNumberOfTodos(): number {
-    return this.todoService.numberOfTodos();
+  async getNumberOfTodos(): Promise<number> {
+    return await this.todoRepository.count();
   }
 }

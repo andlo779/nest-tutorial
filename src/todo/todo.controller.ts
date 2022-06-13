@@ -22,13 +22,13 @@ export class TodoController {
 
   @Post()
   @HttpCode(201)
-  create(@Body() createTodoDto: CreateTodoDto): TodoDto {
-    return this.todoService.create(createTodoDto);
+  async create(@Body() createTodoDto: CreateTodoDto): Promise<TodoDto> {
+    return await this.todoService.create(createTodoDto);
   }
 
   @Get()
-  findAll() {
-    return this.todoService.findAll();
+  async findAll(): Promise<TodoDto[]> {
+    return await this.todoService.findAll();
   }
 
   @Get(':id')
@@ -37,31 +37,34 @@ export class TodoController {
   }
 
   @Patch(':id/owner')
-  updateOwner(
+  async updateOwner(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateOwnerTodoDto: UpdateOwnerTodoDto,
   ) {
-    return this.todoService.updateOwner(id, updateOwnerTodoDto);
+    return await this.todoService.updateOwner(id, updateOwnerTodoDto);
   }
 
   @Patch(':id/description')
-  updateDescription(
+  async updateDescription(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateDescriptionTodoDto: UpdateDescriptionTodoDto,
   ) {
-    return this.todoService.updateDescription(id, updateDescriptionTodoDto);
+    return await this.todoService.updateDescription(
+      id,
+      updateDescriptionTodoDto,
+    );
   }
 
   @Patch(':id/due-date')
-  updateDueDate(
+  async updateDueDate(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateDueDateTodoDto: UpdateDueDateTodoDto,
   ) {
-    return this.todoService.updateDueDate(id, updateDueDateTodoDto);
+    return await this.todoService.updateDueDate(id, updateDueDateTodoDto);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.todoService.remove(id);
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
+    return await this.todoService.remove(id);
   }
 }

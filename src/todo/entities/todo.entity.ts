@@ -1,7 +1,7 @@
 import * as crypto from 'crypto';
 
 export class Todo {
-  private _id: string;
+  private _uuid: string;
   private _title: string;
   private _description: string;
   private _owner: string;
@@ -9,19 +9,19 @@ export class Todo {
   private _dueAt: Date | undefined;
 
   constructor(title: string, description: string, owner: string) {
-    this._id = crypto.randomUUID();
+    this._uuid = crypto.randomUUID();
     this._title = title;
     this._description = description;
     this._owner = owner;
     this._createdAt = new Date();
   }
 
-  get id(): string {
-    return this._id;
+  get uuid(): string {
+    return this._uuid;
   }
 
-  set id(value: string) {
-    this._id = value;
+  set uuid(value: string) {
+    this._uuid = value;
   }
 
   get title(): string {

@@ -12,8 +12,9 @@ export class HealthController {
   }
 
   @Get('status')
-  getHealthStatus(): StatusDto {
-    return new StatusDto('Ok', this.todoStatisticService.getNumberOfTodos());
+  async getHealthStatus(): Promise<StatusDto> {
+    const numberOfTodos = await this.todoStatisticService.getNumberOfTodos();
+    return new StatusDto('Ok', numberOfTodos);
   }
 
   @Get('absurd')
