@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { UpdateOwnerTodoDto } from './dto/update-owner-todo.dto';
 import { Todo } from './entities/todo.entity';
@@ -15,22 +15,13 @@ export class TodoService {
     this._logger = new Logger(TodoService.name);
   }
 
-  private async fetchOne(uuid: string): Promise<Todo> {
-    const todo = await this.todoRepository.getOne(uuid);
-    if (!todo) {
-      this._logger.log(`Could not found a 'Todo' with id ${uuid}`);
-      throw new NotFoundException();
-    }
-    return todo;
-  }
-
   async create(createTodoDto: CreateTodoDto): Promise<TodoDto> {
     const todo: Todo = new Todo(
       createTodoDto.title,
       createTodoDto.description,
       createTodoDto.owner,
     );
-    await this.todoRepository.save(todo);
+    await this.todoRepository.insert(todo);
     return TodoDto.fromEntity(todo);
   }
 
@@ -42,7 +33,7 @@ export class TodoService {
   }
 
   async findOne(uuid: string): Promise<TodoDto> {
-    const todo = await this.fetchOne(uuid);
+    const todo = await this.todoRepository.getOne(uuid);
     return TodoDto.fromEntity(todo);
   }
 
@@ -50,7 +41,7 @@ export class TodoService {
     uuid: string,
     updateOwnerTodoDto: UpdateOwnerTodoDto,
   ): Promise<TodoDto> {
-    const todo = await this.fetchOne(uuid);
+    const todo = await this.todoRepository.getOne(uuid);
     todo.owner = updateOwnerTodoDto.owner;
     return TodoDto.fromEntity(await this.todoRepository.update(todo));
   }
@@ -59,7 +50,7 @@ export class TodoService {
     uuid: string,
     updateDescriptionTodoDto: UpdateDescriptionTodoDto,
   ): Promise<TodoDto> {
-    const todo = await this.fetchOne(uuid);
+    const todo = await this.todoRepository.getOne(uuid);
     todo.description = updateDescriptionTodoDto.description;
     return TodoDto.fromEntity(await this.todoRepository.update(todo));
   }
@@ -68,14 +59,12 @@ export class TodoService {
     uuid: string,
     updateDueDateTodoDto: UpdateDueDateTodoDto,
   ): Promise<TodoDto> {
-    const todo = await this.fetchOne(uuid);
+    const todo = await this.todoRepository.getOne(uuid);
     todo.dueAt = updateDueDateTodoDto.dueAt;
     return TodoDto.fromEntity(await this.todoRepository.update(todo));
   }
 
   async remove(uuid: string) {
-    if (!(await this.todoRepository.delete(uuid))) {
-      throw new NotFoundException();
-    }
+    await this.todoRepository.delete(uuid);
   }
 }

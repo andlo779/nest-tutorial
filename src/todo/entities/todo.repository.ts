@@ -1,40 +1,57 @@
 import { Todo } from './todo.entity';
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Db } from 'mongodb';
 
 @Injectable()
 export class TodoRepository {
   private _logger = new Logger(TodoRepository.name);
-  private _todoStore = new Map<string, Todo>();
+  private _db;
+
+  constructor(@Inject('DATABASE_CONNECTION') db: Db) {
+    this._db = db.collection('Todo');
+  }
 
   async getAll(): Promise<Todo[]> {
-    return Promise.resolve(Array.from(this._todoStore.values()));
+    return await this._db.find().toArray();
   }
 
   async getOne(uuid: string): Promise<Todo> {
-    return Promise.resolve(this._todoStore.get(uuid));
+    const result = await this._db.findOne({ uuid: uuid });
+    if (!result) {
+      this.throwNotFoundException(uuid);
+    }
+    return result;
   }
 
-  async save(todo: Todo): Promise<Todo> {
-    this._todoStore.set(todo.uuid, todo);
-    return Promise.resolve(todo);
+  async insert(todo: Todo) {
+    return await this._db.insertOne(todo);
   }
 
   async update(todo: Todo): Promise<Todo> {
-    this._todoStore.set(todo.uuid, todo);
-    return Promise.resolve(todo);
+    const result = await this._db.findOneAndReplace({ uuid: todo.uuid }, todo);
+    if (result.lastErrorObject.n < 1) {
+      this.throwNotFoundException(todo.uuid);
+    }
+    console.log(result);
+    return todo;
   }
 
-  async delete(uuid: string): Promise<boolean> {
-    if (!this._todoStore.delete(uuid)) {
-      this._logger.log(
-        `Failed to delete an 'Todo' entity with id: ${uuid} as it was not found.`,
-      );
-      return false;
+  async delete(uuid: string): Promise<void> {
+    const result = await this._db.findOneAndDelete({ uuid: uuid });
+    if (result.lastErrorObject.n < 1) {
+      this.throwNotFoundException(uuid);
     }
-    return true;
+    console.log(result);
+  }
+
+  private throwNotFoundException(uuid: string) {
+    this._logger.log(
+      `Failed to delete an 'Todo' entity with id: ${uuid} as it was not found.`,
+    );
+    throw new NotFoundException();
   }
 
   async count(): Promise<number> {
-    return Promise.resolve(this._todoStore.size);
+    return await this._db.countDocuments();
   }
 }
