@@ -9,8 +9,9 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.useGlobalPipes(new ValidationPipe());
   await app.listen(3000, '0.0.0.0');
-  new Logger('Main App').log(
-    `Application is running on: ${await app.getUrl()}`,
+
+  new Logger('NestApplication').log(
+    `Nest application is running on: ${await app.getUrl()}`,
   );
 }
 bootstrap();

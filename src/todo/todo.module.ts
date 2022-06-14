@@ -3,7 +3,7 @@ import { TodoService } from './todo.service';
 import { TodoController } from './todo.controller';
 import { TodoStatisticService } from './todoStatistic.service';
 import { TodoRepository } from './entities/todo.repository';
-import { MongoModule } from '../mongo-module';
+import { MongoModule } from '../mongoclient/mongo-module';
 
 @Module({
   controllers: [TodoController],

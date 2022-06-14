@@ -1,14 +1,15 @@
 import { Todo } from './todo.entity';
 import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Db } from 'mongodb';
+import { DATABASE_COLLECTION_TODO, MONGO_CLIENT } from '../../constants';
 
 @Injectable()
 export class TodoRepository {
   private _logger = new Logger(TodoRepository.name);
   private _mongoCollection;
 
-  constructor(@Inject('MONGO_CLIENT') db: Db) {
-    this._mongoCollection = db.collection('Todo');
+  constructor(@Inject(MONGO_CLIENT) db: Db) {
+    this._mongoCollection = db.collection(DATABASE_COLLECTION_TODO);
   }
 
   async getAll(): Promise<Todo[]> {
@@ -40,7 +41,9 @@ export class TodoRepository {
   }
 
   async delete(uuid: string): Promise<void> {
-    const result = await this._mongoCollection.findOneAndDelete({ uuid: uuid });
+    const result = await this._mongoCollection.findOneAndDelete({
+      uuid: uuid,
+    });
     if (result.lastErrorObject.n < 1) {
       this.throwNotFoundException(uuid);
     }
