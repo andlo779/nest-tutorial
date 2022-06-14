@@ -4,7 +4,7 @@ import { Db, MongoClient } from 'mongodb';
 @Module({
   providers: [
     {
-      provide: 'DATABASE_CONNECTION',
+      provide: 'MONGO_CLIENT',
       useFactory: async (): Promise<Db> => {
         try {
           const client = await MongoClient.connect(
@@ -17,6 +17,6 @@ import { Db, MongoClient } from 'mongodb';
       },
     },
   ],
-  exports: ['DATABASE_CONNECTION'],
+  exports: ['MONGO_CLIENT'],
 })
 export class MongoModule {}

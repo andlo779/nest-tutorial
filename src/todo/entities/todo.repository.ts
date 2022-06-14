@@ -5,18 +5,18 @@ import { Db } from 'mongodb';
 @Injectable()
 export class TodoRepository {
   private _logger = new Logger(TodoRepository.name);
-  private _db;
+  private _mongoCollection;
 
-  constructor(@Inject('DATABASE_CONNECTION') db: Db) {
-    this._db = db.collection('Todo');
+  constructor(@Inject('MONGO_CLIENT') db: Db) {
+    this._mongoCollection = db.collection('Todo');
   }
 
   async getAll(): Promise<Todo[]> {
-    return await this._db.find().toArray();
+    return await this._mongoCollection.find().toArray();
   }
 
   async getOne(uuid: string): Promise<Todo> {
-    const result = await this._db.findOne({ uuid: uuid });
+    const result = await this._mongoCollection.findOne({ uuid: uuid });
     if (!result) {
       this.throwNotFoundException(uuid);
     }
@@ -24,11 +24,14 @@ export class TodoRepository {
   }
 
   async insert(todo: Todo) {
-    return await this._db.insertOne(todo);
+    return await this._mongoCollection.insertOne(todo);
   }
 
   async update(todo: Todo): Promise<Todo> {
-    const result = await this._db.findOneAndReplace({ uuid: todo.uuid }, todo);
+    const result = await this._mongoCollection.findOneAndReplace(
+      { uuid: todo.uuid },
+      todo,
+    );
     if (result.lastErrorObject.n < 1) {
       this.throwNotFoundException(todo.uuid);
     }
@@ -37,7 +40,7 @@ export class TodoRepository {
   }
 
   async delete(uuid: string): Promise<void> {
-    const result = await this._db.findOneAndDelete({ uuid: uuid });
+    const result = await this._mongoCollection.findOneAndDelete({ uuid: uuid });
     if (result.lastErrorObject.n < 1) {
       this.throwNotFoundException(uuid);
     }
@@ -52,6 +55,6 @@ export class TodoRepository {
   }
 
   async count(): Promise<number> {
-    return await this._db.countDocuments();
+    return await this._mongoCollection.countDocuments();
   }
 }
